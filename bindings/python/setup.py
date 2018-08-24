@@ -92,7 +92,7 @@ class build_ext_dffi(build_ext):
         os.chdir(cwd)
         build_ext.run(self)
 
-module = Extension('pydffi',
+module = Extension('pydffi._pydffi',
                     include_dirs = [os.path.join(this_dir, '../../include'),
                         os.path.join(this_dir, '../../third-party')],
                     define_macros = [('dffi_STATIC', None)],
@@ -129,9 +129,11 @@ Static python bindings for dragonffi. API isn't yet stable and is subject to cha
     license='Apache 2.0',
     url = "https://github.com/aguinet/dragonffi",
     download_url = "https://github.com/aguinet/dragonffi/tarball/dffi-0.1.0",
+    entry_points = {"purectypes.generators": ".pydffi = pydffi.purectypes_generator:GenPureCType"},
     ext_modules = [module],
     cmdclass={
         'build_ext': build_ext_dffi,
     },
+    packages = ["pydffi", "pydffi.purectypes_generator"],
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4'
 )

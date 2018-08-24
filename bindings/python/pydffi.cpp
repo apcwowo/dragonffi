@@ -399,7 +399,7 @@ private:
 
 } // anonymous
 
-PYBIND11_MODULE(pydffi, m)
+PYBIND11_MODULE(_pydffi, m)
 {
   DFFI::initialize();
 
