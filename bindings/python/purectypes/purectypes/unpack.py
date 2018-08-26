@@ -1,0 +1,54 @@
+import struct
+import codecs
+from collections import namedtuple
+from enum import Enum
+
+from purectypes.types import Visitor
+
+class UnionValue(object):
+    def __init__(self, ty, data):
+        self._ty = ty
+        self._data = data
+
+    def __getattr__(self, n):
+        ty = getattr(self, "_ty")
+        attr_ty = ty.types.get(n, None)
+        if attr_ty is None:
+            raise KeyError("unknown attribute '%s'" % n)
+        data = getattr(self, "_data")
+        return unpack(attr_ty, data)
+
+    def __repr__(self):
+        ty = getattr(self, "_ty")
+        data = getattr(self, "_data")
+        data = codecs.decode(codecs.encode(data,"hex"),"ascii").upper()
+        return "Union(%s, %s)" % (repr(ty), data)
+
+
+class Unpacker(Visitor):
+    def visit_BasicTy(self, ty, data):
+        return struct.unpack(ty.format, data)[0]
+    def visit_ArrayTy(self, ty, data):
+        eltty = ty.elt_type
+        size = eltty.size
+        return [self.visit(eltty, data[i*size:(i+1)*size]) for i in range(ty._elt_count)]
+    def visit_StructTy(self, ty, data):
+        retty = namedtuple(ty.name, ty.fields.keys())
+        return retty(**{name: unpack(f.type_, data[f.offset:f.offset+f.type_._size]) for name,f in ty._fields.items()})
+    def visit_PointerTy(self, ty, data):
+        return struct.unpack(ty.ptr_format, data)[0]
+    def visit_EnumTy(self, ty, data):
+        v = struct.unpack(ty.format, data)[0]
+        try:
+            return ty.enum(v)
+        except ValueError:
+            return v
+    def visit_UnionTy(self, ty, data):
+        if len(data) != ty.size:
+            raise ValueError("union: expecting a buffer of size %d bytes, got %d" % (ty.size, len(data)))
+        return UnionValue(ty, data)
+    def visit_FunctioNTy(self, ty, data):
+        raise ValueError("can't unpack a function!")
+
+def unpack(ty, data):
+    return Unpacker().visit(ty, data)

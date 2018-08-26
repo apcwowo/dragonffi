@@ -429,6 +429,7 @@ PYBIND11_MODULE(_pydffi, m)
 
   py::enum_<BasicType::BasicKind>(m, "BasicKind")
     .value("Bool", BasicType::Bool)
+    .value("Char", BasicType::Char)
     .value("SChar", BasicType::SChar)
     .value("Short", BasicType::Short)
     .value("Int", BasicType::Int)
@@ -467,6 +468,7 @@ PYBIND11_MODULE(_pydffi, m)
   py::class_<FunctionType>(m, "FunctionType", type)
     .def_property_readonly("returnType", &FunctionType::getReturnType, py::return_value_policy::reference_internal)
     .def_property_readonly("params", &FunctionType::getParams, py::return_value_policy::reference_internal)
+    .def_property_readonly("varArgs", &FunctionType::hasVarArgs)
     .def("getWrapperLLVMStr", &FunctionType::getWrapperLLVMStr)
     .def("__call__", functiontype_getfunction, py::keep_alive<0,1>())
     ;
@@ -810,6 +812,12 @@ PYBIND11_MODULE(_pydffi, m)
   m.def("ptr", [](Type const* Ty) {
     return PointerType::get(Ty);
   }, py::return_value_policy::reference, py::keep_alive<0,1>());
+
+  m.def("native_triple", []() { return DFFI::getNativeTriple(); });
+
+  // Types
+  m.def("format", &getFormatDescriptor);
+  m.def("portable_format", &getPortableFormatDescriptor);
 
   // Exceptions
   py::register_exception<CompileError>(m, "CompileError");
