@@ -62,55 +62,51 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 
-if (BUILD_SHARED_LIBS)
-  set(llvm_libs ${LLVM_CONFIG_LIBFILES})
-else()
-  set(LLVM_LINK_COMPONENTS
-    ${LLVM_TARGETS_TO_BUILD}
-    Analysis
-    AsmParser
-    AsmPrinter
-    BinaryFormat
-    BitReader
-    BitWriter
-    CodeGen
-    Core
-    Coroutines
-    Coverage
-    DebugInfoCodeView
-    DebugInfoMSF
-    ExecutionEngine
-    GlobalISel
-    IRReader
-    AggressiveInstCombine
-    InstCombine
-    Instrumentation
-    LTO
-    Linker
-    MC
-    MCDisassembler
-    MCJIT
-    MCParser
-    ObjCARCOpts
-    ObjCARCOpts
-    Object
-    Option
-    Passes
-    ProfileData
-    RuntimeDyld
-    ScalarOpts
-    SelectionDAG
-    Support
-    Target
-    TransformUtils
-    Vectorize
-    ipo
-  )
-  if (APPLE)
-    set(LLVM_LINK_COMPONENTS ${LLVM_LINK_COMPONENTS} Demangle)
-  endif() 
-  llvm_map_components_to_libnames(llvm_libs ${LLVM_LINK_COMPONENTS})
-endif()
+set(LLVM_LINK_COMPONENTS
+  ${LLVM_TARGETS_TO_BUILD}
+  Analysis
+  AsmParser
+  AsmPrinter
+  BinaryFormat
+  BitReader
+  BitWriter
+  CodeGen
+  Core
+  Coroutines
+  Coverage
+  DebugInfoCodeView
+  DebugInfoMSF
+  ExecutionEngine
+  GlobalISel
+  IRReader
+  AggressiveInstCombine
+  InstCombine
+  Instrumentation
+  LTO
+  Linker
+  MC
+  MCDisassembler
+  MCJIT
+  MCParser
+  ObjCARCOpts
+  ObjCARCOpts
+  Object
+  Option
+  Passes
+  ProfileData
+  RuntimeDyld
+  ScalarOpts
+  SelectionDAG
+  Support
+  Target
+  TransformUtils
+  Vectorize
+  ipo
+)
+if (APPLE)
+  set(LLVM_LINK_COMPONENTS ${LLVM_LINK_COMPONENTS} Demangle)
+endif() 
+llvm_map_components_to_libnames(llvm_libs ${LLVM_LINK_COMPONENTS})
 
 set(CLANG_RES_DIR "${LLVM_BINDIR}/../lib${LLVM_LIBDIR_SUFFIX}/clang/${LLVM_VERSION}/include")
 get_filename_component(CLANG_RES_DIR "${CLANG_RES_DIR}" ABSOLUTE)
@@ -259,17 +255,14 @@ else()
     ${DFFI_SRC}
   )
   target_link_libraries(dffi
-    PUBLIC
+    PRIVATE
     ${DFFI_LINK_LIBRARIES}
   )
   set(DFFI_LIBRARY dffi)
 endif()
 
 add_custom_target(check)
+add_subdirectory(bindings)
 
-option(PYTHON_BINDINGS "Compile python bindings with cmake" ON)
-if (PYTHON_BINDINGS)
-  add_subdirectory(bindings)
-endif()
 option(BUILD_TESTS "Build tests" ON)
 add_subdirectory(tests)
