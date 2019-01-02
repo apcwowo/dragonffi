@@ -11,6 +11,6 @@ fi
 mkdir build
 cd build
 cmake -DBUILD_SHARED_LIBS=ON -DPYTHON_BINDINGS=ON -DPYTHON_VERSION=$PYTHON_VERSION -DBUILD_TESTS=ON -DLLVM_CONFIG=$LNX_LLVM_CONFIG $PYTHON_EXECUTABLE -DCMAKE_BUILD_TYPE=debug -G Ninja .. -DCMAKE_C_COMPILER=clang-7 -DCMAKE_CXX_COMPILER=clang++-7
-ninja
+ninja -v
 lit -v tests
 lit -v bindings/python/tests
